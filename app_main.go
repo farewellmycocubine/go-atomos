@@ -145,6 +145,20 @@ func MainForWorkingPath(runnable CosmosRunnable, path, cosmos, node string, logL
 		sa = *standalone
 	}
 	if IsParentProcess() && !sa {
+		if err = app.ForkAppProcess(); err != nil {
+			msg := fmt.Sprintf("App: Fork app failed. err=(%v)", err)
+			SharedCosmosProcess().Self().Log().coreFatal(msg)
+			log.Printf(msg)
+			os.Exit(1)
+		}
+		msg := fmt.Sprintf("App: Fork app succeed. Loader will exit.")
+		SharedCosmosProcess().Self().Log().coreInfo(msg)
+		log.Printf(msg)
+		log.Printf("App: Access Log File=(%s)", app.logging.getCurAccessLogName())
+		log.Printf("App: Error Log File=(%s)", app.logging.getCurErrorLogName())
+		app.logging.Close()
+		return
+	} else {
 		if err = app.LaunchApp(); err != nil {
 			msg := fmt.Sprintf("App: Launch app failed. err=(%v)", err)
 			SharedCosmosProcess().Self().Log().coreFatal(msg)
